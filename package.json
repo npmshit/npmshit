@@ -1,0 +1,37 @@
+{
+  "name": "npmshit",
+  "version": "0.1.0",
+  "description": "自动清理node_modules中无用的文件",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist/cli.js",
+    "dist/cli.d.ts",
+    "dist/index.js",
+    "dist/index.d.ts"
+  ],
+  "bin" : {
+    "npmshit" : "./dist/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/npmshit/npmshit.git"
+  },
+  "keywords": [
+    "npm",
+    "shit"
+  ],
+  "author": "Yourtion <yourtion@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/npmshit/npmshit/issues"
+  },
+  "homepage": "https://github.com/npmshit/npmshit#readme",
+  "devDependencies": {
+    "typescript": "^2.9.2"
+  }
+}
