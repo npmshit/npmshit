@@ -15,7 +15,9 @@ export interface IResult {
 
 export type Callback = (err: Error | null, res: IResult) => void;
 
-export const rmFile = promisify(fs.unlink);
+export const unlinkAsync = promisify(fs.unlink);
+
+export const statAsync = promisify(fs.stat);
 
 export function humanFileSize(size: number) {
   if (size < 1) return "0 B";

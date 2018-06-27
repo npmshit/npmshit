@@ -1,10 +1,24 @@
+import path from "path";
 import program, { Command } from "commander";
 import { Spinner } from "cli-spinner";
 const { version, description } = require("../package.json");
-import { listFiles, humanFileSize, IResult, rmFile } from "./index";
-import inquirer from "inquirer";
+import { listFiles, humanFileSize, IResult, unlinkAsync, statAsync } from "./index";
+import readline from "readline";
 
 const promptDelete = [{ type: "confirm", name: "confirmDelete", message: "是否确定执行删除操作: ", default: false }];
+
+function prompt(q: string): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  return new Promise(resolve => {
+    rl.question(q, answer => {
+      rl.close();
+      resolve(answer);
+    });
+  });
+}
 
 function sleep(ms: number) {
   ms = ms > 0 ? ms : 0;
@@ -37,18 +51,25 @@ const env = program
   .parse(process.argv);
 
 async function main(env: Command) {
-  const listFile = listFiles("/Users/Yourtion/Codes/OpenSource/npmshit/npmshit/node_modules");
+  const dir = path.resolve(process.cwd(), "node_modules");
+  try {
+    await statAsync(dir);
+  } catch (error) {
+    throw new Error("当前目录没有 node_modules");
+  }
+  const listFile = listFiles(dir);
   const ret = await spinner("努力扫描中...", listFile);
   logRes(ret);
-  if(env.list) return;
-  const { confirmDelete } = (await inquirer.prompt(promptDelete)) as { confirmDelete: boolean };
+  if (env.list) return;
+  const del = await prompt("是否确定执行删除操作: (y/N)");
+  const confirmDelete = del.toLowerCase() === "y";
   if (!confirmDelete) return;
   const rms = ret.fileList.map(it => {
     console.log("删除文件：%s", it);
-    return rmFile(it);
+    return unlinkAsync(it);
   });
   await Promise.all(rms);
   console.log("删除完成！释放空间：", humanFileSize(ret.size));
 }
 
-main(env).catch(console.error)
+main(env).catch(err => console.error(err.message || err));
