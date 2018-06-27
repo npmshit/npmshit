@@ -18,6 +18,7 @@ export type Callback = (err: Error | null, res: IResult) => void;
 export const rmFile = promisify(fs.unlink);
 
 export function humanFileSize(size: number) {
+  if (size < 1) return "0 B";
   var i = Math.floor(Math.log(size) / Math.log(1024));
   return (size / Math.pow(1024, i)).toFixed(2) + " " + ["B", "kB", "MB", "GB", "TB"][i];
 }
@@ -40,7 +41,7 @@ export function listFiles(base: string): Promise<IResult> {
   }
 
   function findOne(filename: string, stats: fs.Stats, next: () => void) {
-    if(!filtter(filename)) {
+    if (!filtter(filename)) {
       return next();
     }
     res.size += stats.size;
@@ -51,4 +52,3 @@ export function listFiles(base: string): Promise<IResult> {
 
   return rd.eachFile(base, findOne).then(() => res);
 }
-

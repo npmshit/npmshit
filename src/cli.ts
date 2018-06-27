@@ -1,4 +1,4 @@
-import program from "commander";
+import program, { Command } from "commander";
 import { Spinner } from "cli-spinner";
 const { version, description } = require("../package.json");
 import { listFiles, humanFileSize, IResult, rmFile } from "./index";
@@ -30,26 +30,25 @@ async function spinner<T>(title: string, fn: Promise<T>, delay = 2000) {
   return ret;
 }
 
-program
+const env = program
   .version(version, "-v, --version")
   .option("-l, --list", "list only")
   .description(description)
-  .action(async function(cmd, env) {
-    if (cmd === "list" || cmd === "clean") {
-      const listFile = listFiles("/Users/Yourtion/Codes/OpenSource/npmshit/npmshit/node_modules");
-      const ret = await spinner("努力扫描中...", listFile);
-      logRes(ret);
-      if (cmd === "clean") {
-        const { confirmDelete } = (await inquirer.prompt(promptDelete)) as { confirmDelete: boolean };
-        if (!confirmDelete) return;
-        const rms = ret.fileList.map(it => {
-          console.log("删除文件：%s", it);
-          return rmFile(it);
-        });
-        await Promise.all(rms);
-        console.log("删除完成！释放空间：", humanFileSize(ret.size));
-      }
-    }
-  });
+  .parse(process.argv);
 
-program.parse(process.argv);
+async function main(env: Command) {
+  const listFile = listFiles("/Users/Yourtion/Codes/OpenSource/npmshit/npmshit/node_modules");
+  const ret = await spinner("努力扫描中...", listFile);
+  logRes(ret);
+  if(env.list) return;
+  const { confirmDelete } = (await inquirer.prompt(promptDelete)) as { confirmDelete: boolean };
+  if (!confirmDelete) return;
+  const rms = ret.fileList.map(it => {
+    console.log("删除文件：%s", it);
+    return rmFile(it);
+  });
+  await Promise.all(rms);
+  console.log("删除完成！释放空间：", humanFileSize(ret.size));
+}
+
+main(env).catch(console.error)
