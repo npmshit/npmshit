@@ -52,7 +52,7 @@ const BLACK_LIST_PACKAGE: Record<string, { dirs: string[]; files: string[] }> = 
     files: ["CopyrightNotice.txt", "ThirdPartyNoticeText.txt"],
   },
 };
-const WHITE_LIST_PACKAGE_FIELD = ["name", "main", "scripts", "typings", "bin", "dependencies"];
+const WHITE_LIST_PACKAGE_FIELD = ["name", "version", "main", "scripts", "typings", "bin", "dependencies"];
 
 export interface IResult {
   totalSize: number;
