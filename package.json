@@ -1,6 +1,6 @@
 {
   "name": "npmshit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "自动清理node_modules中无用的文件",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -12,7 +12,7 @@
     "dist/index.d.ts"
   ],
   "bin": {
-    "npmshit": "./bin/cli.js"
+    "npmshit": "./bin/npmshit.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
