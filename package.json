@@ -39,7 +39,11 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
+    "@types/cli-spinner": "^0.2.0",
+    "@types/inquirer": "0.0.42",
+    "cli-spinner": "^0.2.8",
     "commander": "^2.15.1",
+    "inquirer": "^6.0.0",
     "rd": "^2.0.0"
   }
 }
