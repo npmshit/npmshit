@@ -2,7 +2,7 @@ import path from "path";
 import program, { Command } from "commander";
 import { Spinner } from "cli-spinner";
 const { version, description } = require("../package.json");
-import { listFiles, humanFileSize, IResult, unlinkAsync, statAsync } from "./index";
+import { listFiles, humanFileSize, IResult, unlinkAsync, statAsync, reducePackageJson } from "./index";
 import readline from "readline";
 
 function prompt(q: string): Promise<string> {
@@ -30,7 +30,8 @@ function logRes(ret: IResult, list: boolean) {
     ret.fileList.forEach(n => console.log(n));
   }
   console.log(`包总数：${ret.packageCount}，可删除文件：${ret.fileCount}，可释放空间：${humanFileSize(ret.size)}`);
-  console.log(`原始大小：${humanFileSize(ret.totalSize)}，占比：${((ret.size / ret.totalSize) * 100).toFixed(1)}%%`);
+  console.log(`原始大小：${humanFileSize(ret.totalSize)}，占比：${((ret.size / ret.totalSize) * 100).toFixed(1)}%`);
+  console.log(`通过package.json压缩节省：${humanFileSize(ret.packageFreeSize)}`);
 }
 
 async function spinner<T>(title: string, fn: Promise<T>, delay = 2000) {
@@ -61,9 +62,16 @@ async function main(env: Command) {
   }
   const listFile = listFiles(dir);
   const ret = await spinner("努力扫描中...", listFile, env.list ? 0 : 2000);
+
+  if (ret.size < 1) {
+    console.log("恭喜！ node_modules 目录很干净");
+    return;
+  }
+
   logRes(ret, env.list);
   if (env.list) return;
-  const del = await prompt("是否确定执行删除操作: (y/N)");
+
+  const del = await prompt("是否确定执行删除操作: (y/N) ");
   const confirmDelete = del.toLowerCase() === "y";
   if (!confirmDelete) return;
   const rms = ret.fileList.map(it => {
@@ -71,6 +79,8 @@ async function main(env: Command) {
     return unlinkAsync(it);
   });
   await Promise.all(rms);
+  ret.packageFileList.forEach(n => reducePackageJson(n, true));
+
   console.log("删除完成！释放空间：", humanFileSize(ret.size));
 }
 
