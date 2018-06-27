@@ -20,7 +20,20 @@ const BLACK_LIST_FILE = [
   "tslint.yaml",
 ];
 const BLACK_LIST_EXT = [".md", ".markdown", ".map"];
-const BLACK_LIST_DIR = ["example", "examples", "test", "tests", ".idea", ".vscode", "docs", "doc", "wiki"];
+const BLACK_LIST_ADVJS_EXT = [".min.js", ".runtime.js", ".test.js", ".spec.js", ".debug.js"];
+const BLACK_LIST_DIR = [
+  "example",
+  "examples",
+  "test",
+  "tests",
+  ".idea",
+  ".vscode",
+  "docs",
+  "doc",
+  "wiki",
+  "__test__",
+  "__mock__",
+];
 
 export interface IResult {
   totalSize: number;
@@ -70,6 +83,12 @@ export async function listFiles(base: string): Promise<IResult> {
 
     const ext = path.extname(name).toLocaleLowerCase();
     if (BLACK_LIST_EXT.indexOf(ext) !== -1) return true;
+
+    if (ext === ".js") {
+      for (const advExt of BLACK_LIST_ADVJS_EXT) {
+        if (file.slice(-advExt.length) === advExt) return true;
+      }
+    }
   }
 
   function dirFiltter(name: string) {
