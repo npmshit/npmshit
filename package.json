@@ -5,17 +5,20 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
+    "bin/npmshit.js",
     "dist/cli.js",
     "dist/cli.d.ts",
     "dist/index.js",
     "dist/index.d.ts"
   ],
-  "bin" : {
-    "npmshit" : "./dist/cli.js"
+  "bin": {
+    "npmshit": "./bin/cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublishOnly": "tsc"
+    "format": "prettier --write \"**/*.ts\"",
+    "compile": "rm -rf dist && tsc",
+    "prepublish": "npm run compile"
   },
   "repository": {
     "type": "git",
@@ -32,6 +35,11 @@
   },
   "homepage": "https://github.com/npmshit/npmshit#readme",
   "devDependencies": {
+    "prettier": "^1.13.6",
     "typescript": "^2.9.2"
+  },
+  "dependencies": {
+    "commander": "^2.15.1",
+    "rd": "^2.0.0"
   }
 }
