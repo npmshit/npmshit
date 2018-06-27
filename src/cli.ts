@@ -76,7 +76,7 @@ async function main(env: Command) {
   if (!confirmDelete) return;
   const rms = ret.fileList.map(it => {
     console.log("删除文件：%s", it);
-    return unlinkAsync(it);
+    return unlinkAsync(it).catch(err => 0);
   });
   await Promise.all(rms);
   await Promise.all(ret.dirList.map(n => rmdir(n)));

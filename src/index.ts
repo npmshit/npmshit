@@ -28,7 +28,7 @@ const BLACK_LIST_FILE = [
   "yarn.lock",
 ];
 const BLACK_LIST_EXT = [".md", ".markdown", ".map"];
-const BLACK_LIST_ADVJS_EXT = [".min.js", ".runtime.js", ".test.js", ".spec.js", ".debug.js"];
+const BLACK_LIST_ADVJS_EXT = [".min.js", ".test.js", ".spec.js", ".debug.js"];
 const BLACK_LIST_DIR = [
   "example",
   "examples",
@@ -76,8 +76,13 @@ export async function rmdir(dir: string) {
   const list = await rd.readDir(dir);
   list.sort((a, b) => b.length - a.length);
   for (const n of list) {
-    await rmdirAsync(n);
+    try {
+      await rmdirAsync(n);
+    } catch (err) {}
   }
+  try {
+    await rmdirAsync(dir);
+  } catch (err) {}
 }
 
 export function humanFileSize(size: number) {
