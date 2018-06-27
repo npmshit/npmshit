@@ -9,7 +9,10 @@ const BLACK_LIST_FILE = [
   "license.txt",
   "license-mit.txt",
   "author",
+  "authors",
   "changelog",
+  "changelogs",
+  "history",
   "codeowners",
 
   "gulpfile.js",
@@ -39,7 +42,6 @@ const BLACK_LIST_DIR = [
   "__test__",
   "__mock__",
 ];
-
 const BLACK_LIST_PACKAGE: Record<string, { dirs: string[]; files: string[] }> = {
   handlebars: {
     dirs: ["dist"],
@@ -50,6 +52,7 @@ const BLACK_LIST_PACKAGE: Record<string, { dirs: string[]; files: string[] }> = 
     files: ["CopyrightNotice.txt", "ThirdPartyNoticeText.txt"],
   },
 };
+const WHITE_LIST_PACKAGE_FIELD = ["name", "main", "scripts", "typings", "bin", "dependencies"];
 
 export interface IResult {
   totalSize: number;
@@ -198,25 +201,12 @@ export function reducePackageJson(name: string, write: boolean = false): { size:
     });
   }
 
-  for (const i in pkg) {
-    if (i[0] === "_") delete pkg[i];
-    else if (i.indexOf("config") !== -1) delete pkg[i];
+  const newPkg: any = {};
+  for (const n of WHITE_LIST_PACKAGE_FIELD) {
+    newPkg[n] = pkg[n];
   }
-  delete pkg.devDependencies;
-  delete pkg.homepage;
-  delete pkg.bugs;
-  delete pkg.keywords;
-  delete pkg.repository;
-  delete pkg.files;
-  delete pkg.description;
-  delete pkg.maintainers;
-  delete pkg.authors;
-  delete pkg.author;
-  delete pkg.engines;
-  delete pkg.gitHead;
-  delete pkg.shasum;
-  delete pkg.tarball;
-  const data = Buffer.from(JSON.stringify(pkg));
+
+  const data = Buffer.from(JSON.stringify(newPkg));
   if (write) {
     fs.writeFileSync(name, data);
   }
