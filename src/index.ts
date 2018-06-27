@@ -3,7 +3,27 @@ import fs from "fs";
 import path from "path";
 import { promisify } from "util";
 
-const BLACK_LIST_FILE = ["license", "license.txt", "license-mit.txt", "gulpfile.js"];
+const BLACK_LIST_FILE = [
+  ".DS_Store",
+  "license",
+  "license.txt",
+  "license-mit.txt",
+  "gulpfile.js",
+  "author",
+  "changelog",
+  ".npmignore",
+  ".gitignore",
+  ".coveralls.yml",
+  ".prettierrc.js",
+  ".travis.yml",
+  "tsconfig.json",
+  "tslint.json",
+  "tslint.yaml",
+  ".eslintrc.js",
+  ".eslintrc.json",
+  ".eslintrc.yaml",
+  ".eslintrc.yml",
+];
 const BLACK_LIST_EXT = [".md"];
 
 export interface IResult {
@@ -30,7 +50,7 @@ export function listFiles(base: string): Promise<IResult> {
     size: 0,
     packageCount: 0,
     fileCount: 0,
-    fileList: []
+    fileList: [],
   };
 
   function filtter(name: string) {

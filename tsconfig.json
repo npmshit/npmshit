@@ -9,5 +9,6 @@
     "strict": true,
     "declaration": true,
     "sourceMap": true,
+    "noUnusedLocals": true
   }
 }

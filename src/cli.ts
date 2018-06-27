@@ -5,12 +5,10 @@ const { version, description } = require("../package.json");
 import { listFiles, humanFileSize, IResult, unlinkAsync, statAsync } from "./index";
 import readline from "readline";
 
-const promptDelete = [{ type: "confirm", name: "confirmDelete", message: "是否确定执行删除操作: ", default: false }];
-
 function prompt(q: string): Promise<string> {
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
   return new Promise(resolve => {
     rl.question(q, answer => {
@@ -27,7 +25,10 @@ function sleep(ms: number) {
   });
 }
 
-function logRes(ret: IResult) {
+function logRes(ret: IResult, list: boolean) {
+  if (list) {
+    ret.fileList.forEach(n => console.log(n));
+  }
   console.log(`包总数：${ret.packageCount}，可删除文件：${ret.fileCount}，可释放空间：${humanFileSize(ret.size)}`);
 }
 
@@ -58,8 +59,8 @@ async function main(env: Command) {
     throw new Error("当前目录没有 node_modules");
   }
   const listFile = listFiles(dir);
-  const ret = await spinner("努力扫描中...", listFile);
-  logRes(ret);
+  const ret = await spinner("努力扫描中...", listFile, env.list ? 0 : 2000);
+  logRes(ret, env.list);
   if (env.list) return;
   const del = await prompt("是否确定执行删除操作: (y/N)");
   const confirmDelete = del.toLowerCase() === "y";
