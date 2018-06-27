@@ -1,4 +1,5 @@
 import rd from "rd/promises";
+import rd2 from "rd";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
@@ -39,6 +40,17 @@ const BLACK_LIST_DIR = [
   "__mock__",
 ];
 
+const BLACK_LIST_PACKAGE: Record<string, { dirs: string[]; files: string[] }> = {
+  handlebars: {
+    dirs: ["dist"],
+    files: [],
+  },
+  typescript: {
+    dirs: [],
+    files: ["CopyrightNotice.txt", "ThirdPartyNoticeText.txt"],
+  },
+};
+
 export interface IResult {
   totalSize: number;
   size: number;
@@ -48,6 +60,7 @@ export interface IResult {
   fileList: string[];
   dirList: string[];
   packageFileList: string[];
+  removeFiles: string[];
 }
 
 export type Callback = (err: Error | null, res: IResult) => void;
@@ -80,6 +93,7 @@ export async function listFiles(base: string): Promise<IResult> {
     fileList: [],
     dirList: [],
     packageFileList: [],
+    removeFiles: [],
   };
 
   function fileFiltter(name: string) {
@@ -111,10 +125,11 @@ export async function listFiles(base: string): Promise<IResult> {
   function process(name: string, stats: fs.Stats) {
     const file = path.basename(name).toLocaleLowerCase();
     if (file === "package.json") {
-      const newSize = reducePackageJson(name);
+      const { size: newSize, removeFiles } = reducePackageJson(name);
       const size = stats.size - newSize;
       res.size += size;
       res.packageFreeSize += size;
+      res.removeFiles = res.removeFiles.concat(removeFiles);
     }
   }
 
@@ -142,6 +157,13 @@ export async function listFiles(base: string): Promise<IResult> {
     res.size += size;
   }
 
+  res.removeFiles.forEach(f => {
+    if (res.fileList.indexOf(f) !== -1) return;
+    const s = fs.statSync(f);
+    res.fileList.push(f);
+    res.size += s.size;
+  });
+
   return res;
 }
 
@@ -156,9 +178,26 @@ async function getDirTotalSize(dir: string): Promise<{ size: number; files: stri
   return { size, files };
 }
 
-export function reducePackageJson(name: string, write: boolean = false): number {
+export function reducePackageJson(name: string, write: boolean = false): { size: number; removeFiles: string[] } {
   const origin = fs.readFileSync(name);
   const pkg = JSON.parse(origin.toString());
+
+  let removeFiles: string[] = [];
+  if (pkg.name in BLACK_LIST_PACKAGE) {
+    const { dirs, files } = BLACK_LIST_PACKAGE[pkg.name];
+    const dir = path.dirname(name);
+    files.forEach(n => {
+      const f = path.resolve(dir, n);
+      if (fs.existsSync(f)) {
+        removeFiles.push(f);
+      }
+    });
+    dirs.forEach(n => {
+      const files = rd2.readFileSync(path.resolve(dir, n));
+      removeFiles = removeFiles.concat(files);
+    });
+  }
+
   for (const i in pkg) {
     if (i[0] === "_") delete pkg[i];
     else if (i.indexOf("config") !== -1) delete pkg[i];
@@ -181,5 +220,5 @@ export function reducePackageJson(name: string, write: boolean = false): number 
   if (write) {
     fs.writeFileSync(name, data);
   }
-  return data.length;
+  return { size: data.length, removeFiles };
 }
