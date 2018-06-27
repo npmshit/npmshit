@@ -4,29 +4,25 @@ import path from "path";
 import { promisify } from "util";
 
 const BLACK_LIST_FILE = [
-  ".DS_Store",
   "license",
   "license.txt",
   "license-mit.txt",
-  "gulpfile.js",
   "author",
   "changelog",
-  ".npmignore",
-  ".gitignore",
-  ".coveralls.yml",
-  ".prettierrc.js",
-  ".travis.yml",
+  "codeowners",
+
+  "gulpfile.js",
+  "bower.json",
+
   "tsconfig.json",
+
   "tslint.json",
   "tslint.yaml",
-  ".eslintrc.js",
-  ".eslintrc.json",
-  ".eslintrc.yaml",
-  ".eslintrc.yml",
 ];
-const BLACK_LIST_EXT = [".md"];
+const BLACK_LIST_EXT = [".md", ".markdown", ".map"];
 
 export interface IResult {
+  totalSize: number;
   size: number;
   packageCount: number;
   fileCount: number;
@@ -47,6 +43,7 @@ export function humanFileSize(size: number) {
 
 export function listFiles(base: string): Promise<IResult> {
   const res: IResult = {
+    totalSize: 0,
     size: 0,
     packageCount: 0,
     fileCount: 0,
@@ -55,14 +52,20 @@ export function listFiles(base: string): Promise<IResult> {
 
   function filtter(name: string) {
     const file = path.basename(name).toLocaleLowerCase();
-    const ext = path.extname(name).toLocaleLowerCase();
     if (file === "package.json") {
       res.packageCount += 1;
     }
-    return BLACK_LIST_FILE.indexOf(file) !== -1 || BLACK_LIST_EXT.indexOf(ext) !== -1;
+
+    if (file[0] === ".") return true;
+
+    if (BLACK_LIST_FILE.indexOf(file) !== -1) return true;
+
+    const ext = path.extname(name).toLocaleLowerCase();
+    if (BLACK_LIST_EXT.indexOf(ext) !== -1) return true;
   }
 
   function findOne(filename: string, stats: fs.Stats, next: () => void) {
+    res.totalSize += stats.size;
     if (!filtter(filename)) {
       return next();
     }

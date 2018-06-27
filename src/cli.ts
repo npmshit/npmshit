@@ -30,6 +30,7 @@ function logRes(ret: IResult, list: boolean) {
     ret.fileList.forEach(n => console.log(n));
   }
   console.log(`包总数：${ret.packageCount}，可删除文件：${ret.fileCount}，可释放空间：${humanFileSize(ret.size)}`);
+  console.log(`原始大小：${humanFileSize(ret.totalSize)}，占比：${((ret.size / ret.totalSize) * 100).toFixed(1)}%%`);
 }
 
 async function spinner<T>(title: string, fn: Promise<T>, delay = 2000) {
