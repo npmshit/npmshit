@@ -2,7 +2,7 @@ import path from "path";
 import program, { Command } from "commander";
 import { Spinner } from "cli-spinner";
 const { version, description } = require("../package.json");
-import { listFiles, humanFileSize, IResult, unlinkAsync, statAsync, reducePackageJson } from "./index";
+import { listFiles, humanFileSize, IResult, unlinkAsync, statAsync, reducePackageJson, rmdir } from "./index";
 import readline from "readline";
 
 function prompt(q: string): Promise<string> {
@@ -79,6 +79,7 @@ async function main(env: Command) {
     return unlinkAsync(it);
   });
   await Promise.all(rms);
+  await Promise.all(ret.dirList.map(n => rmdir(n)));
   ret.packageFileList.forEach(n => reducePackageJson(n, true));
 
   console.log("删除完成！释放空间：", humanFileSize(ret.size));

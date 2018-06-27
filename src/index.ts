@@ -18,6 +18,10 @@ const BLACK_LIST_FILE = [
 
   "tslint.json",
   "tslint.yaml",
+
+  "package-lock.json",
+  "npm-shrinkwrap.json",
+  "yarn.lock",
 ];
 const BLACK_LIST_EXT = [".md", ".markdown", ".map"];
 const BLACK_LIST_ADVJS_EXT = [".min.js", ".runtime.js", ".test.js", ".spec.js", ".debug.js"];
@@ -49,8 +53,16 @@ export interface IResult {
 export type Callback = (err: Error | null, res: IResult) => void;
 
 export const unlinkAsync = promisify(fs.unlink);
-
+export const rmdirAsync = promisify(fs.rmdir);
 export const statAsync = promisify(fs.stat);
+
+export async function rmdir(dir: string) {
+  const list = await rd.readDir(dir);
+  list.sort((a, b) => b.length - a.length);
+  for (const n of list) {
+    await rmdirAsync(n);
+  }
+}
 
 export function humanFileSize(size: number) {
   if (size < 1) return "0 B";
@@ -158,6 +170,13 @@ export function reducePackageJson(name: string, write: boolean = false): number 
   delete pkg.repository;
   delete pkg.files;
   delete pkg.description;
+  delete pkg.maintainers;
+  delete pkg.authors;
+  delete pkg.author;
+  delete pkg.engines;
+  delete pkg.gitHead;
+  delete pkg.shasum;
+  delete pkg.tarball;
   const data = Buffer.from(JSON.stringify(pkg));
   if (write) {
     fs.writeFileSync(name, data);
