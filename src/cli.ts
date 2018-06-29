@@ -74,12 +74,15 @@ async function main(env: Command) {
   const del = await prompt("是否确定执行删除操作: (y/N) ");
   const confirmDelete = del.toLowerCase() === "y";
   if (!confirmDelete) return;
-  const rms = ret.fileList.map(it => {
+  const rms: any[] = [];
+  ret.fileList.forEach(it => {
     console.log("删除文件：%s", it);
-    return unlinkAsync(it).catch(err => 0);
+    rms.push(unlinkAsync(it).catch(err => 0));
   });
   await Promise.all(rms);
-  await Promise.all(ret.dirList.map(n => rmdir(n)));
+  const dirs: any[] = [];
+  ret.dirList.forEach(n => dirs.push(rmdir(n)));
+  await Promise.all(dirs);
   ret.packageFileList.forEach(n => reducePackageJson(n, true));
 
   console.log("删除完成！释放空间：", humanFileSize(ret.size));

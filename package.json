@@ -1,6 +1,6 @@
 {
   "name": "npmshit",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "自动清理node_modules中无用的文件",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -29,6 +29,9 @@
     "shit"
   ],
   "author": "Yourtion <yourtion@gmail.com>",
+  "contributors": [
+    "Zongmin Lei <leizongmin@gmail.com>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/npmshit/npmshit/issues"

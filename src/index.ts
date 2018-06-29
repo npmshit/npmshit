@@ -60,10 +60,10 @@ export interface IResult {
   packageFreeSize: number;
   packageCount: number;
   fileCount: number;
-  fileList: string[];
-  dirList: string[];
-  packageFileList: string[];
-  removeFiles: string[];
+  fileList: Set<string>;
+  dirList: Set<string>;
+  packageFileList: Set<string>;
+  removeFiles: Set<string>;
 }
 
 export type Callback = (err: Error | null, res: IResult) => void;
@@ -98,17 +98,17 @@ export async function listFiles(base: string): Promise<IResult> {
     packageFreeSize: 0,
     packageCount: 0,
     fileCount: 0,
-    fileList: [],
-    dirList: [],
-    packageFileList: [],
-    removeFiles: [],
+    fileList: new Set(),
+    dirList: new Set(),
+    packageFileList: new Set(),
+    removeFiles: new Set(),
   };
 
   function fileFiltter(name: string) {
     const file = path.basename(name).toLocaleLowerCase();
     if (file === "package.json") {
       res.packageCount += 1;
-      res.packageFileList.push(name);
+      res.packageFileList.add(name);
     }
 
     if (file[0] === ".") return true;
@@ -127,7 +127,7 @@ export async function listFiles(base: string): Promise<IResult> {
 
   function dirFiltter(name: string) {
     const dir = path.basename(name).toLocaleLowerCase();
-    if (BLACK_LIST_DIR.indexOf(dir) !== -1) res.dirList.push(name);
+    if (BLACK_LIST_DIR.indexOf(dir) !== -1) res.dirList.add(name);
   }
 
   function process(name: string, stats: fs.Stats) {
@@ -137,7 +137,7 @@ export async function listFiles(base: string): Promise<IResult> {
       const size = stats.size - newSize;
       res.size += size;
       res.packageFreeSize += size;
-      res.removeFiles = res.removeFiles.concat(removeFiles);
+      removeFiles.forEach(it => res.removeFiles.add(it));
     }
   }
 
@@ -153,7 +153,7 @@ export async function listFiles(base: string): Promise<IResult> {
     }
     res.size += stats.size;
     res.fileCount += 1;
-    res.fileList.push(filename);
+    res.fileList.add(filename);
     next();
   }
 
@@ -161,14 +161,14 @@ export async function listFiles(base: string): Promise<IResult> {
 
   for (const dir of res.dirList) {
     const { size, files } = await getDirTotalSize(dir);
-    res.fileList = res.fileList.concat(files);
+    files.forEach(it => res.fileList.add(it));
     res.size += size;
   }
 
   res.removeFiles.forEach(f => {
-    if (res.fileList.indexOf(f) !== -1) return;
+    if (res.fileList.has(f)) return;
     const s = fs.statSync(f);
-    res.fileList.push(f);
+    res.fileList.add(f);
     res.size += s.size;
   });
 
